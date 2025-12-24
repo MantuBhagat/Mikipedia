@@ -25,7 +25,7 @@ const FloatingInput = ({
         value={value}
         onChange={onChange}
         onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(value !== "")}
+        // onBlur={() => setIsFocused(value !== "")}
         placeholder=" " // important for floating label
         className={`w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
           ${isFocused || value ? "border-orange-400" : "border-gray-300"}`}
