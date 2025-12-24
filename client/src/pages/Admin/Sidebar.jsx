@@ -34,21 +34,21 @@ const Sidebar = () => {
           <NavLink to="/admin" className={linkClass}>
             📊 {open && "Dashboard"}
           </NavLink>
-
           <NavLink to="/admin/users" className={linkClass}>
             👥 {open && "Users"}
           </NavLink>
-
           <NavLink to="/admin/content" className={linkClass}>
             📝 {open && "Content"}
           </NavLink>
-
           <NavLink to="/admin/reports" className={linkClass}>
             🚨 {open && "Reports"}
           </NavLink>
-
           <NavLink to="/admin/analytics" className={linkClass}>
             📈 {open && "Analytics"}
+          </NavLink>
+
+          <NavLink to="/profile" className={linkClass}>
+            🙍 {open && "Profile"}
           </NavLink>
         </nav>
       </aside>

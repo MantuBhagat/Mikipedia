@@ -1,7 +1,6 @@
 import React from "react";
 import "./App.css";
 import "./index.css";
-import { motion } from "framer-motion";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -15,26 +14,34 @@ import Profile from "./pages/Profile";
 
 const App = () => {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/contact" element={<Services />} />
-      <Route path="/account" element={<Contact />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/*" element={<h1>Not found</h1>} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/register" element={<Register />} />
+    <>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Services />} />
+        <Route path="/account" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/*" element={<h1>Not found</h1>} />
+        <Route path="/register" element={<Register />} />
 
-      <Route
-        path="/dashboard"
-        element={
-          <PrivateRoute>
-            <Dashboard />
-          </PrivateRoute>
-        }
-      />
-      <Route path="/profile" element={<Profile />} />
-    </Routes>
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
+    </>
   );
 };
 

@@ -6,14 +6,30 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    username: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     email: {
       type: String,
       required: true,
       unique: true,
     },
+    role: {
+      type: String,
+      enum: ["contributor", "editor", "moderator"],
+      default: "contributor",
+    },
     password: {
       type: String,
       required: true,
+    },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true }

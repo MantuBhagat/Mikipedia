@@ -1,50 +1,62 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
 
 const Profile = () => {
-  const [userData, setUserData] = React.useState(null);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const token = localStorage.getItem("token");
+    const fetchProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/profile", {
+        const { data } = await axios.get("http://localhost:5000/api/profile", {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        setUserData(response.data);
-      } catch (error) {
-        console.error("Error fetching user data:", error);
+        setData(data.user);
+      } catch (err) {
+        console.error("Error fetching profile:", err);
       }
     };
 
-    fetchUserData();
+    fetchProfile();
   }, []);
+
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md"
-      >
-        <h1 className="text-3xl font-bold mb-4">Profile</h1>
-        {userData ? (
-          <div>
-            <p className="text-gray-700 mb-2">
-              <strong>Name:</strong> {userData.name}
-            </p>
-            <p className="text-gray-700 mb-2">
-              <strong>Email:</strong> {userData.email}
-            </p>
-            {/* Add more user details as needed */}
-          </div>
-        ) : (
-          <p className="text-gray-700">Loading...</p>
-        )}
-      </motion.div>
-    </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
+        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+          <h2 className="text-2xl font-bold mb-6 text-center">User Profile</h2>
+          {data ? (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">ID:</h3>
+                <p className="text-gray-700">{data._id}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Name:</h3>
+                <p className="text-gray-700">{data.name}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Username:</h3>
+                <p className="text-gray-700">{data.username}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Email:</h3>
+                <p className="text-gray-700">{data.email}</p>
+              </div>
+              {/* Add more profile fields as needed */}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center">Loading profile...</p>
+          )}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
