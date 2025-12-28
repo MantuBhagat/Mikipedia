@@ -1,9 +1,13 @@
-import React from 'react'
+import React from "react";
+import Topbar from "../components/Topbar";
 
 const Services = () => {
   return (
-    <div>Services</div>
-  )
-}
+    <div className="min-h-screen p-2 w-full">
+      <Topbar />
+      Services
+    </div>
+  );
+};
 
-export default Services
+export default Services;

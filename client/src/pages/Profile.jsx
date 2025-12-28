@@ -1,63 +1,29 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import axios from "axios";
+import { useEffect, useState } from "react";
+import api from "../api/api";
 
-const Profile = () => {
-  const [data, setData] = useState(null);
+export default function Profile() {
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const { data } = await axios.get("http://localhost:5000/api/profile", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        setData(data.user);
-      } catch (err) {
-        console.error("Error fetching profile:", err);
-      }
-    };
-
-    fetchProfile();
+    api
+      .get("/users/profile")
+      .then((res) => setUser(res.data))
+      .catch(() => setUser(null));
   }, []);
 
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-        <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6 text-center">User Profile</h2>
-          {data ? (
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold">ID:</h3>
-                <p className="text-gray-700">{data._id}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Name:</h3>
-                <p className="text-gray-700">{data.name}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Username:</h3>
-                <p className="text-gray-700">{data.username}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold">Email:</h3>
-                <p className="text-gray-700">{data.email}</p>
-              </div>
-              {/* Add more profile fields as needed */}
-            </div>
-          ) : (
-            <p className="text-gray-500 text-center">Loading profile...</p>
-          )}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+  if (!user) return <div className="p-6">Loading...</div>;
 
-export default Profile;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-lg shadow-md w-[350px]">
+        <h2 className="text-xl font-bold mb-4">Profile</h2>
+        <p>
+          <b>Username:</b> {user.username}
+        </p>
+        <p>
+          <b>Role:</b> {user.role}
+        </p>
+      </div>
+    </div>
+  );
+}

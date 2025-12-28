@@ -1,93 +1,70 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { useState } from "react";
+import { registerUser } from "../api/auth";
+import { useNavigate } from "react-router-dom";
 import FloatingInput from "../components/FloatingInput";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { Link } from "react-router-dom";
 
-const Register = () => {
-  const navigate = useNavigate();
+export default function Register() {
   const [form, setForm] = useState({
-    name: "",
     username: "",
     email: "",
     password: "",
   });
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axios.post(
-        "http://localhost:5000/api/register",
-        form
-      );
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      await registerUser(form);
+      navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.message || "Register failed");
+      console.error(err);
     }
   };
 
   return (
-    <div className="min-h-screen flex gap-2 items-center justify-center bg-gray-100">
-      <motion.form
-        onSubmit={handleSubmit}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md"
+    <form className="min-h-screen flex flex-col  justify-center items-center gap-1 w-full max-w-md px-10 mx-auto">
+      <h2 className="text-2xl font-semibold mb-8 text-center">
+        Mikify - Evolving knowledge
+      </h2>
+
+      <FloatingInput
+        label="Username"
+        name="username"
+        value={form.username}
+        onChange={(e) => setForm({ ...form, username: e.target.value })}
+      />
+
+      <FloatingInput
+        label="Email"
+        type="email"
+        name="email"
+        value={form.email}
+        onChange={(e) => setForm({ ...form, email: e.target.value })}
+      />
+
+      <FloatingInput
+        label="Password"
+        type="password"
+        name="password"
+        value={form.password}
+        onChange={(e) => setForm({ ...form, password: e.target.value })}
+      />
+
+      <button
+        onClick={submit}
+        className="w-full bg-black text-white py-3 rounded-md"
       >
-        <h2 className="text-2xl font-bold mb-6 text-center">Create Account</h2>
+        Register
+      </button>
 
-        <FloatingInput
-          label="Name"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          icon={<FaUser />}
-        />
-
-        <FloatingInput
-          label="Username"
-          name="username"
-          value={form.username}
-          onChange={handleChange}
-          icon={<FaUser />}
-        />
-
-        <FloatingInput
-          label="Email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          icon={<FaEnvelope />}
-        />
-
-        <FloatingInput
-          label="Password"
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          icon={<FaLock />}
-        />
-
-        <button className="w-full bg-orange-500 text-white py-3 rounded-md font-semibold hover:bg-orange-600 transition">
-          Register
-        </button>
-
-        <p className="text-sm text-center mt-4">
-          Already have an account?{" "}
-          <Link to="/login" className="text-orange-500 font-medium">
-            Login
-          </Link>
-        </p>
-      </motion.form>
-    </div>
+      <p className="mt-4">
+        Don't have an account?
+        <Link to="/login" className="text-blue-600 ml-1">
+          Sign in
+        </Link>
+      </p>
+    </form>
   );
-};
-
-export default Register;
+}

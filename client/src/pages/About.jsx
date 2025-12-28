@@ -2,7 +2,12 @@ import React from 'react'
 
 const About = () => {
   return (
-    <div>About</div>
+    // Home page of Mikify - Evloving knowledge.
+    <div className='min-h-screen m-0 p-2 '>
+      <h2></h2>
+
+    </div>
+    
   )
 }
 

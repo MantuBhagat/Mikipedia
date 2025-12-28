@@ -27,8 +27,8 @@ const FloatingInput = ({
         onFocus={() => setIsFocused(true)}
         // onBlur={() => setIsFocused(value !== "")}
         placeholder=" " // important for floating label
-        className={`w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent
-          ${isFocused || value ? "border-orange-400" : "border-gray-300"}`}
+        className={`w-full px-10 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent
+          ${isFocused || value ? "border-gray-800" : "border-gray-500"}`}
       />
 
       {/* Label */}
@@ -37,7 +37,7 @@ const FloatingInput = ({
         className={`absolute left-10 px-1 transition-all duration-200 cursor-text bg-white 
           ${
             isFocused || value
-              ? "-top-2 text-xs text-orange-600"
+              ? "-top-2 text-xs text-gray-800"
               : "top-3 text-sm text-gray-500"
           }`}
       >

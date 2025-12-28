@@ -2,38 +2,37 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-    },
     username: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
     email: {
       type: String,
-      required: true,
       unique: true,
+      lowercase: true,
     },
-    role: {
-      type: String,
-      enum: ["contributor", "editor", "moderator"],
-      default: "contributor",
-    },
+
     password: {
       type: String,
       required: true,
+      minlength: 6,
     },
-    resetPasswordToken: String,
-    resetPasswordExpires: Date,
-    isActive: {
-      type: Boolean,
-      default: true,
+    role: {
+      type: String,
+      enum: ["user", "admin", "manager"],
+      default: "user",
+    },
+
+    refreshTokenHashed: String,
+    tokenVersion: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
 );
 
-const User = mongoose.model("User", userSchema);
-export default User;
+export default mongoose.model("User", userSchema);

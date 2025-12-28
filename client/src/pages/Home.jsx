@@ -3,11 +3,6 @@ import { Link } from "react-router-dom";
 import { Navigate } from "react-router-dom";
 
 const Home = () => {
-  let token = localStorage.getItem("token");
-  if (token) {
-    return <Navigate to="/dashboard" />;
-  }
-
   return (
     <div className="min-h-screen grid md:grid-cols-2 place-items-center p-8 bg-gray-50">
       <div className="w-full text-center mb-12">
@@ -46,7 +41,7 @@ const Home = () => {
 
         <p>
           New to Mikify?
-          <Link to="/create" className="flex-1 text-blue-500 hover:underline">
+          <Link to="/register" className="flex-1 text-blue-500 hover:underline">
             Join now
           </Link>
         </p>

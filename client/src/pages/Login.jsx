@@ -1,80 +1,64 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import { FaEnvelope, FaLock } from "react-icons/fa";
+import React, { useState, useContext } from "react";
+import { loginUser } from "../api/auth";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
 import FloatingInput from "../components/FloatingInput";
-import { useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import { Link } from "react-router-dom";
 
-const Login = () => {
+export default function Login() {
+  const { setUser } = useContext(AuthContext);
+  const [form, setForm] = useState({ username: "", password: "" });
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    setLoading(true);
+
     try {
-      const { data } = await axios.post(
-        "http://localhost:5000/api/login",
-        form
-      );
-      localStorage.setItem("token", data.token);
-      navigate("/dashboard");
+      const data = await loginUser(form);
+
+      // ✅ SAVE TOKEN + USER
+      localStorage.setItem("token", data.accessToken);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setUser(data.user);
+
+      // ✅ REDIRECT
+      navigate("/profile", { replace: true });
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
-    } finally {
-      setLoading(false);
+      console.error("Login failed:", err.response?.data || err.message);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <motion.form
-        onSubmit={handleSubmit}
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+    <form
+      onSubmit={submit}
+      className="min-h-screen flex flex-col  justify-center items-center gap-1 w-full max-w-md px-10 mx-auto"
+    >
+      <h1 className="text-2xl font-semibold mb-8">Welcome back</h1>
+      <FloatingInput
+        label="Username"
+        name="username"
+        value={form.username}
+        onChange={(e) => setForm({ ...form, username: e.target.value })}
+      />
 
-        <FloatingInput
-          label="Email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          icon={<FaEnvelope />}
-        />
+      <FloatingInput
+        label="Password"
+        type="password"
+        name="password"
+        value={form.password}
+        onChange={(e) => setForm({ ...form, password: e.target.value })}
+      />
 
-        <FloatingInput
-          label="Password"
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          icon={<FaLock />}
-        />
+      <button className="w-full py-3 bg-black text-white rounded-md">
+        Login
+      </button>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-orange-500 text-white py-3 rounded-md font-semibold hover:bg-orange-600 transition"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-
-        <p className="text-sm text-center mt-4">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-orange-500 font-medium">
-            Register
-          </Link>
-        </p>
-      </motion.form>
-    </div>
+      <p className="mt-4">
+        Don't have an account?
+        <Link to="/register" className="text-blue-600 ml-1">
+          Sign up
+        </Link>
+      </p>
+    </form>
   );
-};
-
-export default Login;
+}
