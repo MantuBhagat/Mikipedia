@@ -1,6 +1,9 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../utils/token.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+
+
+
 
 /* ================= REGISTER ================= */
 export const register = async (req, res) => {
@@ -38,12 +41,13 @@ export const register = async (req, res) => {
 };
 
 /* ================= LOGIN ================= */
+  
 export const login = async (req, res) => {
   try {
     const { username, password } = req.body;
 
     if (!username || !password) {
-      return res.status(400).json({ message: "Username & password required" });
+      return res.status(400).json({ message: "Credentials required" });
     }
 
     const user = await User.findOne({ username });
@@ -56,23 +60,37 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const accessToken = generateToken({
+    const payload = {
       id: user._id,
       role: user.role,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // 🔐 httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.status(200).json({
       accessToken,
       user: {
-        userId: user._id,
+        id: user._id,
         username: user.username,
         role: user.role,
       },
     });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
+
+
+
 
 /* ================= PROFILE ================= */
 export const profile = async (req, res) => {
