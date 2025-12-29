@@ -2,7 +2,7 @@ import Sidebar from "../components/Sidebar";
 import StatCard from "../components/StatCard";
 import { FaCheckDouble } from "react-icons/fa";
 
-const EditorDashboard = () => {
+const ManagerDashboard = () => {
   return (
     <div className="flex">
       <Sidebar role="editor" />
@@ -22,4 +22,4 @@ const EditorDashboard = () => {
   );
 };
 
-export default EditorDashboard;
+export default ManagerDashboard;
