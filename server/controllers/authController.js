@@ -5,7 +5,7 @@ import { generateToken } from "../utils/token.js";
 /* ================= REGISTER ================= */
 export const register = async (req, res) => {
   try {
-    const { username, email, password, role } = req.body;
+    const { username, email, password} = req.body;
 
     if (!username || !email || !password) {
       return res.status(400).json({ message: "All fields required" });
@@ -25,12 +25,12 @@ export const register = async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: role || "user",
+      role: "user",
     });
 
     res.status(201).json({
       message: "User registered successfully",
-      userId: user._id,
+ 
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
