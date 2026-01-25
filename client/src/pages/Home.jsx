@@ -1,61 +1,182 @@
-import React from "react";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Navigate } from "react-router-dom";
+import {
+  FiGlobe,
+  FiUsers,
+  FiLayers,
+  FiArrowRight,
+  FiEdit,
+  FiEye,
+} from "react-icons/fi";
+import Navbar from "../components/Navbar";
 
 const Home = () => {
   return (
-    <div className="min-h-screen grid md:grid-cols-2 place-items-center p-8 bg-gray-50">
-      <div className="w-full text-center mb-12">
-        <h1 className="text-5xl font-light mb-4">
-          Build, share, and verify your knowledge together.
-        </h1>
+    <div className="bg-white text-gray-900">
+      <Navbar />
 
-        <div className="flex-col flex my-10 gap-2">
-          <p className="border-2 border-black rounded-full p-2">Google login</p>
-          <p className="border-2 border-black rounded-full p-2">
-            Microsoft login
-          </p>
+      {/* HERO */}
+      <section className="max-w-7xl mx-auto px-6 pt-32 pb-24 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-4xl md:text-6xl font-bold leading-tight"
+        >
+          One profile.
+          <br />
+          <span className="text-gray-400">Endless possibilities.</span>
+        </motion.h1>
 
-          <div className="flex items-center my-2">
-            <hr className="flex-grow border-t border-gray-400" />
-            <span className="mx-2 text-gray-500">or</span>
-            <hr className="flex-grow border-t border-gray-400" />
-          </div>
+        <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-600">
+          Mikify is your digital identity — showcase work, connect with people,
+          and grow globally without building a website or app.
+        </p>
 
+        <div className="mt-10 flex justify-center flex-wrap gap-4">
           <Link
-            to="/login"
-            className="bg-black text-white rounded-full p-2 block"
+            to="/register"
+            className="px-8 py-4 bg-blue-600 text-white rounded-full flex items-center gap-2"
           >
-            Continue with email
+            Create your profile <FiArrowRight />
+          </Link>
+
+          <Link to="/explore" className="px-8 py-4 border rounded-full">
+            Explore
           </Link>
         </div>
+      </section>
 
-        <p className="text-sm font-light mb-8">
-          By clicking Continue to join or sign in, you agree to Mikify’s{" "}
-          <span className="text-blue-500">
-            User <br /> Agreement
-          </span>
-          , <span className="text-blue-500">Privacy Policy</span>, and{" "}
-          <span className="text-blue-500">Cookie Policy</span>.
+      {/* PLATFORM VALUE */}
+      <section className="bg-gray-50 py-24">
+        <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+          <ValueCard
+            icon={<FiLayers />}
+            title="One Digital Space"
+            text="Website, portfolio, services, and contact — all in one profile."
+          />
+          <ValueCard
+            icon={<FiUsers />}
+            title="Communities"
+            text="Join communities, collaborate, and share ideas with people like you."
+          />
+          <ValueCard
+            icon={<FiGlobe />}
+            title="Global Reach"
+            text="Get discovered by clients, teams, and opportunities worldwide."
+          />
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-semibold text-center mb-12">
+            How Mikify works
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <StepCard
+              icon={<FiEdit />}
+              title="Create your profile"
+              text="Sign up and build your Mikify space in minutes."
+            />
+            <StepCard
+              icon={<FiEye />}
+              title="Share & showcase"
+              text="Add services, links, media, and your work."
+            />
+            <StepCard
+              icon={<FiUsers />}
+              title="Connect & grow"
+              text="Join communities and get discovered."
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* COMMUNITIES PREVIEW */}
+      <section className="bg-gray-50 py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-semibold">Explore Communities</h2>
+            <Link to="/communities" className="text-sm text-gray-600">
+              View all →
+            </Link>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-6">
+            {["Startups", "Creators", "Business", "Government"].map((c) => (
+              <CommunityBox key={c} name={c} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA */}
+      <section className="py-28 text-center">
+        <h2 className="text-3xl font-semibold">
+          Build your digital identity today
+        </h2>
+        <p className="mt-4 text-gray-500">
+          No code. No complexity. Just one powerful profile.
         </p>
 
-        <p>
-          New to Mikify?
-          <Link to="/register" className="flex-1 text-blue-500 hover:underline">
-            Join now
-          </Link>
-        </p>
-      </div>
+        <Link
+          to="/register"
+          className="inline-flex items-center gap-2 mt-8 px-8 py-4 bg-blue-600 text-white rounded-full"
+        >
+          Get started free <FiArrowRight />
+        </Link>
+      </section>
 
-      <div className="flex justify-center">
-        <img
-          src="https://static.licdn.com/aero-v1/sc/h/dxf91zhqd2z6b0bwg85ktm5s4"
-          alt="Illustration 1"
-          className="w-1/2 h-auto"
-        />
-      </div>
+      {/* FOOTER NAV */}
+      <footer className="border-t py-10">
+        <div className="max-w-6xl mx-auto px-6 flex flex-wrap gap-6 justify-between text-sm text-gray-600">
+          <span>© {new Date().getFullYear()} Mikify</span>
+          <div className="flex gap-6">
+            <Link to="/about">About</Link>
+            <Link to="/communities">Communities</Link>
+            <Link to="/privacy">Privacy</Link>
+            <Link to="/terms">Terms</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
 
 export default Home;
+
+/* ---------- Components ---------- */
+
+const ValueCard = ({ icon, title, text }) => (
+  <motion.div
+    whileHover={{ y: -6 }}
+    className="bg-white border rounded-2xl p-6"
+  >
+    <div className="text-2xl mb-4 text-blue-600">{icon}</div>
+    <h3 className="font-semibold text-lg">{title}</h3>
+    <p className="mt-2 text-gray-600">{text}</p>
+  </motion.div>
+);
+
+const StepCard = ({ icon, title, text }) => (
+  <div className="border rounded-2xl p-6 text-center">
+    <div className="text-3xl mb-4 text-blue-600 flex justify-center">
+      {icon}
+    </div>
+    <h3 className="font-semibold text-lg">{title}</h3>
+    <p className="mt-2 text-gray-600">{text}</p>
+  </div>
+);
+
+const CommunityBox = ({ name }) => (
+  <Link
+    to={`/communities/${name.toLowerCase()}`}
+    className="border rounded-xl p-6 hover:bg-white hover:border-blue-500 transition"
+  >
+    <h3 className="font-semibold">{name}</h3>
+    <p className="text-sm text-gray-600 mt-1">Posts & discussions</p>
+  </Link>
+);

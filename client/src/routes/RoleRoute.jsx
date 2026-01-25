@@ -6,7 +6,7 @@ const RoleRoute = ({ roles, children }) => {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) {
-    return <div className="p-6 text-center">Loading...</div>;
+    return <MikifyLoader />;
   }
 
   // Not logged in

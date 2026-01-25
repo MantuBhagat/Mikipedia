@@ -1,39 +1,71 @@
-import React from "react";
+import { useContext, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { MdTravelExplore } from "react-icons/md";
-const links = [
-  { name: "Explore", path: "/explore", icon: "<MdTravelExplore />" },
-];
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+  const [copied, setCopied] = useState(false);
+
+  const copyProfileLink = () => {
+    const link = `${window.location.origin}/${user.username}`;
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
-    <motion.nav
-      className="bg-slate-50 sticky top-0 left-0 w-full z-10"
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 100 }}
-    >
-      <div className="w-full py-2 flex items-center justify-around">
-        <div>
-          <Link to="/" className="text-2xl font-bold">
-            Mikify
-          </Link>
-        </div>
-        <div className="flex items-center space-x-6">
-          {links.map((link) => (
-            <Link
-              key={link.name}
-              to={link.path}
-              className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 transition"
-            >
-              <span>{link.icon}</span>
-              <span>{link.name}</span>
+    <nav className="fixed top-0 w-full bg-white border-b px-8 py-4 flex justify-between z-50">
+      <Link to="/" className="text-xl font-bold">
+        Mikify
+      </Link>
+
+      {user && (
+        <div className="relative group">
+          <button className="flex items-center gap-2">
+            <img
+              src={user.avatar || "https://i.pravatar.cc/100"}
+              className="w-8 h-8 rounded-full"
+            />
+            <span>{user.name}</span>
+          </button>
+
+          <div className="absolute right-0 hidden group-hover:block bg-white shadow-lg rounded w-52">
+            {user.isProfileCompleted && (
+              <>
+                {/* Open in new tab */}
+                <a
+                  href={`/${user.username}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block px-4 py-2 hover:bg-gray-100"
+                >
+                  Open Public Profile
+                </a>
+
+                {/* Copy link */}
+                <button
+                  onClick={copyProfileLink}
+                  className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                >
+                  {copied ? "Link Copied ✅" : "Copy Profile Link"}
+                </button>
+              </>
+            )}
+
+            <Link to="/settings" className="block px-4 py-2 hover:bg-gray-100">
+              Settings
             </Link>
-          ))}
+
+            <button
+              onClick={logout}
+              className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100"
+            >
+              Logout
+            </button>
+          </div>
         </div>
-      </div>
-    </motion.nav>
+      )}
+    </nav>
   );
 };
 

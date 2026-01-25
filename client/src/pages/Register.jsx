@@ -1,39 +1,49 @@
-import { useState } from "react";
-import { registerUser } from "../api/auth";
-import { useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import { replace, useNavigate } from "react-router-dom";
 import FloatingInput from "../components/FloatingInput";
 import { Link } from "react-router-dom";
+import api from "../api/axios";
+import { FiUserPlus } from "react-icons/fi";
+import { BsArrowLeft } from "react-icons/bs";
 
 export default function Register() {
+  const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
-    username: "",
+    name: "",
     email: "",
     password: "",
   });
 
-  const navigate = useNavigate();
-
   const submit = async (e) => {
     e.preventDefault();
-    try {
-      await registerUser(form);
-      navigate("/login");
-    } catch (err) {
-      console.error(err);
-    }
+    await api.post("/auth/register", {
+      name: form.name,
+      email: form.email,
+      password: form.password,
+    });
+
+    await login({ email: form.email, password: form.password });
+
+    navigate("/dashboard", { replace: true });
   };
 
   return (
     <form className="min-h-screen flex flex-col  justify-center items-center gap-1 w-full max-w-md px-10 mx-auto">
-      <h2 className="text-2xl font-semibold mb-8 text-center">
-        Mikify - Evolving knowledge
+      <h2 className="text-4xl font-semibold text-center">
+        Create your profile
       </h2>
+      <p className="text-gray-600 mb-6">
+        Join Mikify and build your digital Identity
+      </p>
 
       <FloatingInput
-        label="Username"
-        name="username"
-        value={form.username}
-        onChange={(e) => setForm({ ...form, username: e.target.value })}
+        label="Full Name"
+        name="name"
+        value={form.name}
+        onChange={(e) => setForm({ ...form, name: e.target.value })}
       />
 
       <FloatingInput
@@ -54,17 +64,28 @@ export default function Register() {
 
       <button
         onClick={submit}
-        className="w-full bg-black text-white py-3 rounded-md"
+        className="w-full flex justify-center items-center gap-2 bg-blue-600 text-white py-3 rounded-full"
       >
-        Register
+        <FiUserPlus />
+        Create account
       </button>
 
-      <p className="mt-4">
+      <p className="mt-4 text-gray-500">
         Don't have an account?
         <Link to="/login" className="text-blue-600 ml-1">
           Sign in
         </Link>
       </p>
+
+      <div>
+        <Link
+          to="/"
+          className="flex gap-2 justify-center text-gray-500 items-center mt-4"
+        >
+          <BsArrowLeft />
+          Back to Home
+        </Link>
+      </div>
     </form>
   );
 }

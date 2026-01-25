@@ -1,19 +1,23 @@
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Token not provided" });
-  }
-
-  const token = authHeader.split(" ")[1];
-
+export const protect = async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    const token = req.cookies.accessToken;
+
+    if (!token) {
+      return res.status(401).json({ message: "No access token" });
+    }
+
+    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+
+    const user = await User.findById(decoded.id).populate("role");
+    if (!user) return res.status(401);
+
+    req.user = user;
+
     next();
-  } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+  } catch (err) {
+    return res.status(401).json({ message: "Access token expired" });
   }
 };

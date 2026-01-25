@@ -1,35 +1,70 @@
 import { createContext, useEffect, useState } from "react";
+import api from "../api/axios";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // auth user
+  const [profile, setProfile] = useState(null); // optional
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+  // 🔁 Restore session
+  const restoreSession = async () => {
+    try {
+      // 1️⃣ Check auth
+      const authRes = await api.get("/auth/me");
+      setUser(authRes.data);
 
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
+      // 2️⃣ Try loading profile (may be null)
+      try {
+        const profileRes = await api.get("/profile/me");
+        setProfile(profileRes.data); // can be null
+      } catch (err) {
+        if (err.response?.status !== 404) {
+          console.error("Profile load error", err);
+        }
+        setProfile(null);
+      }
+    } catch (err) {
+      // ❌ Only auth failure logs user out
+      setUser(null);
+      setProfile(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, []);
-
-  const login = (data) => {
-    localStorage.setItem("token", data.accessToken);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    setUser(data.user);
   };
 
-  const logout = () => {
-    localStorage.clear();
+  useEffect(() => {
+    restoreSession();
+  }, []);
+
+  // 🔐 Login
+  const login = async (data) => {
+    await api.post("/auth/login", data);
+    await restoreSession();
+  };
+
+  // 🔓 Logout
+  const logout = async () => {
+    await api.post("/auth/logout");
     setUser(null);
+    setProfile(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, loading }}>
-      {children}
+    <AuthContext.Provider
+      value={{
+        user,
+        profile,
+        loading,
+        isAuthenticated: !!user,
+        isProfileCompleted: !!profile?.isCompleted,
+        login,
+        logout,
+        setProfile, // for profile-setup page
+      }}
+    >
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

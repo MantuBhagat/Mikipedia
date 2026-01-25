@@ -1,89 +1,180 @@
-import User from "../models/User.js";
 import bcrypt from "bcryptjs";
-import { generateToken } from "../utils/token.js";
+import crypto from "crypto";
+import User from "../models/User.js";
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+import jwt from "jsonwebtoken";
 
-/* ================= REGISTER ================= */
-export const register = async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
-
-    if (!username || !email || !password) {
-      return res.status(400).json({ message: "All fields required" });
-    }
-
-    const existingUser = await User.findOne({
-      $or: [{ username }, { email }],
-    });
-
-    if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      username,
-      email,
-      password: hashedPassword,
-      role: role || "user",
-    });
-
-    res.status(201).json({
-      message: "User registered successfully",
-      userId: user._id,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
 };
 
-/* ================= LOGIN ================= */
-export const login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+export const register = async (req, res) => {
+  const { name, email, password } = req.body;
 
-    if (!username || !password) {
-      return res.status(400).json({ message: "Username & password required" });
-    }
+  if (!name || !email || !password)
+    return res.status(400).json({ message: "All fields required" });
 
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+  const existingUser = await User.findOne({ email });
+  if (existingUser)
+    return res.status(409).json({ message: "User already exists" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const accessToken = generateToken({
-      id: user._id,
-      role: user.role,
-    });
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+    role: "user",
+  });
 
-    res.status(200).json({
-      accessToken,
+  // OPTIONAL: auto-login after register
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user);
+
+  user.refreshToken = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+  await user.save();
+
+  res
+    .cookie("accessToken", accessToken, {
+      ...cookieOptions,
+      maxAge: 15 * 60 * 1000,
+    })
+    .cookie("refreshToken", refreshToken, {
+      ...cookieOptions,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    })
+    .status(201)
+    .json({
+      success: true,
       user: {
-        userId: user._id,
-        username: user.username,
+        id: user._id,
+        name: user.name,
+        email: user.email,
         role: user.role,
       },
     });
+};
+
+export const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid credentials" });
+
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
+
+    user.refreshToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+    await user.save();
+
+    res
+      .cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
-/* ================= PROFILE ================= */
-export const profile = async (req, res) => {
+export const logout = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(204); // No content
+
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(refreshToken)
+    .digest("hex");
+  const user = await User.findOne({ refreshToken: hashedToken });
+
+  if (user) {
+    user.refreshToken = null;
+    await user.save();
+  }
+  res
+    .clearCookie("accessToken", cookieOptions)
+    .clearCookie("refreshToken", cookieOptions)
+    .sendStatus(204);
+};
+
+export const refreshAccessToken = async (req, res) => {
+  const refreshToken = req.cookies.refreshToken;
+  if (!refreshToken) return res.sendStatus(401);
+
   try {
-    const user = await User.findById(req.user.id).select("-password");
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+
+    const hashedToken = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    const user = await User.findOne({
+      _id: decoded.id,
+      refreshToken: hashedToken,
+    });
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      // TOKEN REUSE DETECTED → force logout everywhere
+      return res.sendStatus(403);
     }
-    res.status(200).json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+
+    const newAccessToken = generateAccessToken(user);
+    const newRefreshToken = generateRefreshToken(user);
+
+    user.refreshToken = crypto
+      .createHash("sha256")
+      .update(newRefreshToken)
+      .digest("hex");
+    await user.save();
+
+    res
+      .cookie("accessToken", newAccessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", newRefreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .json({
+        success: true,
+        user: {
+          id: user._id,
+          role: user.role,
+        },
+      });
+  } catch {
+    return res.sendStatus(403);
   }
+};
+
+export const me = async (req, res) => {
+  res.json(req.user);
 };
