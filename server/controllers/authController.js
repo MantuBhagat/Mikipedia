@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+<<<<<<< HEAD
 import crypto from "crypto";
 import User from "../models/User.js";
 import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
@@ -15,6 +16,57 @@ export const register = async (req, res) => {
 
   if (!name || !email || !password)
     return res.status(400).json({ message: "All fields required" });
+=======
+import { generateAccessToken, generateRefreshToken } from "../utils/token.js";
+
+
+
+
+/* ================= REGISTER ================= */
+export const register = async (req, res) => {
+  try {
+    const { username, email, password} = req.body;
+
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ username }, { email }],
+    });
+
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      username,
+      email,
+      password: hashedPassword,
+      role: "user",
+    });
+
+    res.status(201).json({
+      message: "User registered successfully",
+ 
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ================= LOGIN ================= */
+  
+export const login = async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: "Credentials required" });
+    }
+>>>>>>> 34f51d150d6002d927cb47f2ebf40d1996b0882d
 
   const existingUser = await User.findOne({ email });
   if (existingUser)
@@ -22,12 +74,30 @@ export const register = async (req, res) => {
 
   const hashedPassword = await bcrypt.hash(password, 10);
 
+<<<<<<< HEAD
   const user = await User.create({
     name,
     email,
     password: hashedPassword,
     role: "user",
   });
+=======
+    const payload = {
+      id: user._id,
+      role: user.role,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    // 🔐 httpOnly cookie
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+>>>>>>> 34f51d150d6002d927cb47f2ebf40d1996b0882d
 
   // OPTIONAL: auto-login after register
   const accessToken = generateAccessToken(user);
@@ -53,6 +123,7 @@ export const register = async (req, res) => {
       success: true,
       user: {
         id: user._id,
+<<<<<<< HEAD
         name: user.name,
         email: user.email,
         role: user.role,
@@ -127,6 +198,22 @@ export const refreshAccessToken = async (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   if (!refreshToken) return res.sendStatus(401);
 
+=======
+        username: user.username,
+        role: user.role,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
+/* ================= PROFILE ================= */
+export const profile = async (req, res) => {
+>>>>>>> 34f51d150d6002d927cb47f2ebf40d1996b0882d
   try {
     const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
 
